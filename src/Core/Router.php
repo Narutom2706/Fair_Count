@@ -4,6 +4,7 @@ namespace App\Core;
 
 use App\Controller\HomeController;
 use App\Controller\AuthController;
+use App\Controller\ExpenseController; // <--- AJOUTE ÇA
 
 class Router
 {
@@ -30,6 +31,11 @@ class Router
             case 'logout':
                 $controller = new AuthController();
                 $controller->logout();
+                break;
+
+            case 'add_expense':
+                $controller = new ExpenseController();
+                $controller->add();
                 break;
 
             default:

@@ -1,0 +1,81 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FairCount</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow border-0 mt-4">
+            <div class="card-body p-4">
+                <h2 class="text-primary mb-4">➕ Ajouter une dépense</h2>
+
+                <form action="index.php?page=add_expense" method="POST">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label">Titre de la dépense</label>
+                            <input type="text" name="title" class="form-control" placeholder="Ex: Pizzas, Essence..." required>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Montant (€)</label>
+                            <input type="number" name="amount" class="form-control" step="0.01" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Date</label>
+                            <input type="date" name="date" class="form-control" value="<?= date('Y-m-d') ?>" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Catégorie</label>
+                            <select name="category" class="form-select" required>
+                                <?php foreach ($categories as $category): ?>
+                                    <option value="<?= $category->getId() ?>"><?= htmlspecialchars($category->getLabel()) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Qui a payé ? 💳</label>
+                        <select name="payer" class="form-select">
+                            <?php foreach ($users as $user): ?>
+                                <option value="<?= $user->getId() ?>" <?= ($user->getId() == $_SESSION['user']->getId()) ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($user->getFirstName() . ' ' . $user->getLastName()) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Pour qui ? 👥</label>
+                        <div class="card p-3 bg-light">
+                            <div class="row">
+                                <?php foreach ($users as $user): ?>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="participants[]" value="<?= $user->getId() ?>" id="user_<?= $user->getId() ?>" checked>
+                                            <label class="form-check-label" for="user_<?= $user->getId() ?>">
+                                                <?= htmlspecialchars($user->getFirstName()) ?>
+                                            </label>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        <small class="text-muted">Décochez ceux qui ne sont pas concernés</small>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-success btn-lg">Valider la dépense</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
