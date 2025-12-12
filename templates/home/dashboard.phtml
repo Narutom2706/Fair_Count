@@ -1,0 +1,67 @@
+<div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+    <h1>Tableau de bord 📊</h1>
+    <div>
+        <a href="index.php?page=add_expense" class="btn btn-primary">➕ Dépense</a>
+        <a href="index.php?page=add_reimbursement" class="btn btn-success">💸 Rembourser</a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Dernières Dépenses</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Quoi</th>
+                            <th>Qui</th>
+                            <th>Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($expenses as $expense): ?>
+                            <tr>
+                                <td><?= date('d/m', strtotime($expense['date'])) ?></td>
+                                <td>
+                                    <strong><?= htmlspecialchars($expense['title']) ?></strong><br>
+                                    <small class="text-muted"><?= htmlspecialchars($expense['category_label']) ?></small>
+                                </td>
+                                <td><?= htmlspecialchars($expense['first_name']) ?></td>
+                                <td class="fw-bold text-danger">- <?= number_format($expense['amount'] / 100, 2) ?> €</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Remboursements</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    <?php foreach ($reimbursements as $reim): ?>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted"><?= date('d/m', strtotime($reim['date'])) ?></small><br>
+                                <strong><?= htmlspecialchars($reim['from_name']) ?></strong> 
+                                ➝ 
+                                <?= htmlspecialchars($reim['to_name']) ?>
+                            </div>
+                            <span class="badge bg-success rounded-pill">
+                                <?= number_format($reim['amount'] / 100, 2) ?> €
+                            </span>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

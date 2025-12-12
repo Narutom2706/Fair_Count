@@ -1,0 +1,34 @@
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-body">
+                <h2 class="text-success mb-4">💸 Faire un remboursement</h2>
+                
+                <form action="index.php?page=add_reimbursement" method="POST">
+                    <div class="mb-3">
+                        <label class="form-label">Je rembourse à :</label>
+                        <select name="user_to" class="form-select" required>
+                            <?php foreach ($users as $user): ?>
+                                <?php if ($user->getId() !== $_SESSION['user']->getId()): ?>
+                                    <option value="<?= $user->getId() ?>"><?= htmlspecialchars($user->getFirstName() . ' ' . $user->getLastName()) ?></option>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Montant (€)</label>
+                        <input type="number" name="amount" class="form-control" step="0.01" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Date</label>
+                        <input type="date" name="date" class="form-control" value="<?= date('Y-m-d') ?>" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100">Valider le remboursement</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

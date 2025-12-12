@@ -4,6 +4,7 @@ namespace App\Manager;
 
 use App\Core\Db;
 use App\Model\Expense;
+use PDO;
 
 class ExpenseManager
 {
@@ -31,5 +32,18 @@ class ExpenseManager
                 'user_id' => $userId
             ]);
         }
+    }
+
+    public function findAll(): array
+    {
+        $db = Db::getInstance();
+        $sql = "SELECT e.*, u.first_name, u.last_name, c.label as category_label 
+                FROM expense e
+                JOIN user u ON e.user_id = u.id
+                JOIN category c ON e.category_id = c.id
+                ORDER BY e.date DESC";
+        
+        $stmt = $db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
