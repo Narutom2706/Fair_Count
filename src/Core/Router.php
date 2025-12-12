@@ -2,8 +2,8 @@
 
 namespace App\Core;
 
-use App\Controller\AuthController;
 use App\Controller\HomeController;
+use App\Controller\AuthController;
 
 class Router
 {
@@ -11,11 +11,10 @@ class Router
     {
         $page = $_GET['page'] ?? 'home';
 
-        // --- ROUTING ---
         switch ($page) {
             case 'home':
                 $controller = new HomeController();
-                $controller->index(); 
+                $controller->index();
                 break;
 
             case 'register':
@@ -34,7 +33,7 @@ class Router
                 break;
 
             default:
-                echo "Page 404 : Introuvable";
+                echo "Page introuvable";
                 break;
         }
     }

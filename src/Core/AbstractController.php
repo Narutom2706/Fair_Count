@@ -8,9 +8,9 @@ abstract class AbstractController
     {
         extract($data);
         ob_start();
-        require_once __DIR__ . '/../../templates/' . $path . '.php';
+        require_once __DIR__ . '/../../templates/' . $path . '.phtml';
         $content = ob_get_clean();
-        require_once __DIR__ . '/../../templates/layout.php';
+        require_once __DIR__ . '/../../templates/layout.phtml';
     }
 
     protected function redirect(string $url): void
