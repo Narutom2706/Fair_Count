@@ -20,12 +20,22 @@
                 <ul class="navbar-nav ms-auto align-items-center">
                     
                     <?php if (isset($_SESSION['user'])): ?>
-                        <li class="nav-item">
-                            <a class="nav-link text-white fw-bold me-3" href="index.php?page=add_expense">
-                                ➕ Ajouter une dépense
-                            </a>
-                        </li>
-
+                        
+                        <?php if (isset($totalBalance)): ?>
+                            <li class="nav-item me-4">
+                                <span class="nav-link text-white fw-bold bg-white bg-opacity-25 rounded px-3">
+                                    Solde : 
+                                    <?php if ($totalBalance >= 0): ?>
+                                        <span class="text-white">
+                                            + <?= number_format($totalBalance / 100, 2) ?> €
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-warning"> - <?= number_format(abs($totalBalance) / 100, 2) ?> €
+                                        </span>
+                                    <?php endif; ?>
+                                </span>
+                            </li>
+                        <?php endif; ?>
                         <li class="nav-item">
                             <span class="nav-link text-white-50">
                                 👤 <?= htmlspecialchars($_SESSION['user']->getFirstName()) ?>
@@ -48,18 +58,17 @@
     </nav>
 
     <div class="container">
-        
         <?php if (isset($_GET['error'])): ?>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show">
                 ⚠️ <?= htmlspecialchars($_GET['error']) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 
         <?php if (isset($_GET['success'])): ?>
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="alert alert-success alert-dismissible fade show">
                 ✅ <?= htmlspecialchars($_GET['success']) ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
 

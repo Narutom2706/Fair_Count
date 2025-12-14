@@ -15,15 +15,20 @@ class HomeController extends AbstractController
             return;
         }
 
+        $userId = $_SESSION['user']->getId();
+
         $expenseManager = new ExpenseManager();
         $reimbursementManager = new ReimbursementManager();
 
-        $expenses = $expenseManager->findAll();
-        $reimbursements = $reimbursementManager->findAll();
+        $expenses = $expenseManager->findAllByUser($userId);
+        $reimbursements = $reimbursementManager->findAllByUser($userId);
+        
+        $totalBalance = $expenseManager->calculateBalance($userId);
 
         $this->render('home/dashboard', [
             'expenses' => $expenses,
-            'reimbursements' => $reimbursements
+            'reimbursements' => $reimbursements,
+            'totalBalance' => $totalBalance 
         ]);
     }
 }

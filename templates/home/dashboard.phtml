@@ -1,39 +1,68 @@
 <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
-    <h1>Tableau de bord 📊</h1>
+    <h1 class="text-primary">Tableau de bord 📊</h1>
     <div>
-        <a href="index.php?page=add_expense" class="btn btn-primary">➕ Dépense</a>
-        <a href="index.php?page=add_reimbursement" class="btn btn-success">💸 Rembourser</a>
+        <a href="index.php?page=add_expense" class="btn btn-primary shadow-sm">➕ Dépense</a>
+        <a href="index.php?page=add_reimbursement" class="btn btn-success shadow-sm">💸 Rembourser</a>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-8">
-        <div class="card shadow-sm mb-4">
+        <div class="card shadow border-0 mb-4">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0">Dernières Dépenses</h5>
             </div>
             <div class="card-body p-0">
-                <table class="table table-striped mb-0">
-                    <thead>
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
                         <tr>
                             <th>Date</th>
                             <th>Quoi</th>
-                            <th>Qui</th>
-                            <th>Montant</th>
+                            <th>Qui a payé ?</th>
+                            <th>Pour qui ?</th> <th class="text-end">Impact</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($expenses as $expense): ?>
+                        <?php if (empty($expenses)): ?>
                             <tr>
-                                <td><?= date('d/m', strtotime($expense['date'])) ?></td>
-                                <td>
-                                    <strong><?= htmlspecialchars($expense['title']) ?></strong><br>
-                                    <small class="text-muted"><?= htmlspecialchars($expense['category_label']) ?></small>
-                                </td>
-                                <td><?= htmlspecialchars($expense['first_name']) ?></td>
-                                <td class="fw-bold text-danger">- <?= number_format($expense['amount'] / 100, 2) ?> €</td>
+                                <td colspan="5" class="text-center py-4 text-muted">Aucune dépense pour le moment.</td>
                             </tr>
-                        <?php endforeach; ?>
+                        <?php else: ?>
+                            <?php foreach ($expenses as $expense): ?>
+                                <?php 
+                                    // Comparaison souple (==) pour éviter le bug d'ID
+                                    $isPayer = ($expense['user_id'] == $_SESSION['user']->getId()); 
+                                ?>
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-light text-dark border">
+                                            <?= date('d/m', strtotime($expense['date'])) ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <strong class="text-dark"><?= htmlspecialchars($expense['title']) ?></strong><br>
+                                        <small class="text-muted fst-italic"><?= htmlspecialchars($expense['category_label']) ?></small>
+                                    </td>
+                                    <td>
+                                        <?php if ($isPayer): ?>
+                                            <span class="badge bg-success">Moi</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-light text-dark border"><?= htmlspecialchars($expense['first_name']) ?></span>
+                                        <?php endif; ?>
+                                    </td>
+                                    
+                                    <td>
+                                        <small class="text-muted">
+                                            <?= htmlspecialchars($expense['participants_names'] ?? 'Personne') ?>
+                                        </small>
+                                    </td>
+
+                                    <td class="text-end fw-bold <?= $isPayer ? 'text-success' : 'text-danger' ?>">
+                                        <?= $isPayer ? '+' : '-' ?> <?= number_format($expense['amount'] / 100, 2) ?> €
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -41,25 +70,34 @@
     </div>
 
     <div class="col-md-4">
-        <div class="card shadow-sm">
+        <div class="card shadow border-0">
             <div class="card-header bg-success text-white">
-                <h5 class="mb-0">Remboursements</h5>
+                <h5 class="mb-0">Mouvements d'argent</h5>
             </div>
             <div class="card-body p-0">
                 <ul class="list-group list-group-flush">
-                    <?php foreach ($reimbursements as $reim): ?>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <small class="text-muted"><?= date('d/m', strtotime($reim['date'])) ?></small><br>
-                                <strong><?= htmlspecialchars($reim['from_name']) ?></strong> 
-                                ➝ 
-                                <?= htmlspecialchars($reim['to_name']) ?>
-                            </div>
-                            <span class="badge bg-success rounded-pill">
-                                <?= number_format($reim['amount'] / 100, 2) ?> €
-                            </span>
-                        </li>
-                    <?php endforeach; ?>
+                    <?php if (empty($reimbursements)): ?>
+                        <li class="list-group-item text-center text-muted py-3">Aucun remboursement.</li>
+                    <?php else: ?>
+                        <?php foreach ($reimbursements as $reim): ?>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted d-block mb-1"><?= date('d/m', strtotime($reim['date'])) ?></small>
+                                    
+                                    <?php if ($reim['user_id_from'] == $_SESSION['user']->getId()): ?>
+                                        <strong>Moi</strong> <span class="text-muted">➔</span> <?= htmlspecialchars($reim['to_name']) ?>
+                                    <?php else: ?>
+                                        <strong><?= htmlspecialchars($reim['from_name']) ?></strong> <span class="text-muted">➔</span> Moi
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <?php $isReceiving = ($reim['user_id_to'] == $_SESSION['user']->getId()); ?>
+                                <span class="badge rounded-pill px-3 py-2 <?= $isReceiving ? 'bg-success' : 'bg-danger' ?>">
+                                    <?= $isReceiving ? '+' : '-' ?> <?= number_format($reim['amount'] / 100, 2) ?> €
+                                </span>
+                            </li>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>

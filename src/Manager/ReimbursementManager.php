@@ -4,6 +4,7 @@ namespace App\Manager;
 
 use App\Core\Db;
 use App\Model\Reimbursement;
+use PDO;
 
 class ReimbursementManager
 {
@@ -19,15 +20,20 @@ class ReimbursementManager
         ]);
     }
 
-    public function findAll(): array
+    public function findAllByUser(int $userId): array
     {
         $db = Db::getInstance();
-        // On joint deux fois la table user : une pour l'émetteur (u1), une pour le receveur (u2)
+        
         $sql = "SELECT r.*, u1.first_name as from_name, u2.first_name as to_name 
                 FROM reimbursement r
                 JOIN user u1 ON r.user_id_from = u1.id
                 JOIN user u2 ON r.user_id_to = u2.id
+                WHERE r.user_id_from = :userId OR r.user_id_to = :userId
                 ORDER BY r.date DESC";
-        return $db->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
+        
+        $stmt = $db->prepare($sql);
+        $stmt->execute(['userId' => $userId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
