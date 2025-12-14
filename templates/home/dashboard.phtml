@@ -19,7 +19,8 @@
                             <th>Date</th>
                             <th>Quoi</th>
                             <th>Qui a payé ?</th>
-                            <th>Pour qui ?</th> <th class="text-end">Impact</th>
+                            <th>Pour qui ?</th>
+                            <th class="text-end">Impact (Info)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -30,8 +31,27 @@
                         <?php else: ?>
                             <?php foreach ($expenses as $expense): ?>
                                 <?php 
-                                    // Comparaison souple (==) pour éviter le bug d'ID
-                                    $isPayer = ($expense['user_id'] == $_SESSION['user']->getId()); 
+                                    // Calcul de la part pour info
+                                    $participantsList = $expense['participants_names'] ?? '';
+                                    $participantsArray = array_filter(explode(',', $participantsList));
+                                    $nbParticipants = count($participantsArray);
+                                    if ($nbParticipants < 1) { $nbParticipants = 1; }
+                                    $share = $expense['amount'] / $nbParticipants;
+
+                                    $isPayer = ($expense['user_id'] == $_SESSION['user']->getId());
+                                    
+                                    if ($isPayer) {
+                                        // Si j'ai payé : Impact REEL (Total)
+                                        $displayAmount = -$expense['amount'];
+                                        $isVirtual = false; 
+                                    } else {
+                                        // Si je n'ai pas payé : Impact VIRTUEL (Ma part)
+                                        // C'est ça que tu voulais voir affiché !
+                                        $displayAmount = -$share;
+                                        $isVirtual = true;
+                                    }
+                                    
+                                    $isPositive = ($displayAmount > 0);
                                 ?>
                                 <tr>
                                     <td>
@@ -50,15 +70,22 @@
                                             <span class="badge bg-light text-dark border"><?= htmlspecialchars($expense['first_name']) ?></span>
                                         <?php endif; ?>
                                     </td>
-                                    
                                     <td>
                                         <small class="text-muted">
                                             <?= htmlspecialchars($expense['participants_names'] ?? 'Personne') ?>
                                         </small>
                                     </td>
-
-                                    <td class="text-end fw-bold <?= $isPayer ? 'text-success' : 'text-danger' ?>">
-                                        <?= $isPayer ? '+' : '-' ?> <?= number_format($expense['amount'] / 100, 2) ?> €
+                                    
+                                    <td class="text-end fw-bold">
+                                        <?php if ($isVirtual): ?>
+                                            <span class="text-secondary" title="C'est ta part à payer, mais ça n'a pas encore été débité de ton solde">
+                                                <?= number_format($displayAmount / 100, 2) ?> €
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="<?= $isPositive ? 'text-success' : 'text-danger' ?>">
+                                                <?= $isPositive ? '+' : '' ?> <?= number_format($displayAmount / 100, 2) ?> €
+                                            </span>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -83,14 +110,12 @@
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 <div>
                                     <small class="text-muted d-block mb-1"><?= date('d/m', strtotime($reim['date'])) ?></small>
-                                    
                                     <?php if ($reim['user_id_from'] == $_SESSION['user']->getId()): ?>
                                         <strong>Moi</strong> <span class="text-muted">➔</span> <?= htmlspecialchars($reim['to_name']) ?>
                                     <?php else: ?>
                                         <strong><?= htmlspecialchars($reim['from_name']) ?></strong> <span class="text-muted">➔</span> Moi
                                     <?php endif; ?>
                                 </div>
-                                
                                 <?php $isReceiving = ($reim['user_id_to'] == $_SESSION['user']->getId()); ?>
                                 <span class="badge rounded-pill px-3 py-2 <?= $isReceiving ? 'bg-success' : 'bg-danger' ?>">
                                     <?= $isReceiving ? '+' : '-' ?> <?= number_format($reim['amount'] / 100, 2) ?> €

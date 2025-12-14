@@ -37,6 +37,7 @@ class ExpenseManager
     public function findAllByUser(int $userId): array
     {
         $db = Db::getInstance();
+        
         $sql = "SELECT 
                     e.*, 
                     u.first_name, 
@@ -62,33 +63,32 @@ class ExpenseManager
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function calculateBalance(int $userId): int
+    public function calculateBalance(int $userId): float
     {
         $db = Db::getInstance();
-        $balance = 0;
+        $balance = 0.0;
 
-        $stmt = $db->prepare("SELECT SUM(amount) FROM expense WHERE user_id = ?");
-        $stmt->execute([$userId]);
-        $balance += (int) $stmt->fetchColumn();
+        // On ne compte QUE ce qui sort réellement de la poche (Payer)
+        $sql = "SELECT amount, user_id as payer_id FROM expense WHERE user_id = :userId";
+        $stmt = $db->prepare($sql);
+        $stmt->execute(['userId' => $userId]);
+        $expensesPaid = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $stmt = $db->prepare("
-            SELECT SUM(e.amount) 
-            FROM expense e 
-            JOIN expense_participant ep ON e.id = ep.expense_id 
-            WHERE ep.user_id = ? AND e.user_id != ?
-        ");
-        $stmt->execute([$userId, $userId]);
-        $balance -= (int) $stmt->fetchColumn();
+        foreach ($expensesPaid as $expense) {
+            $balance -= (float) $expense['amount'];
+        }
 
-        // 3. J'ai reçu un remboursement (Crédit +)
+        // Ajout des remboursements reçus (+)
         $stmt = $db->prepare("SELECT SUM(amount) FROM reimbursement WHERE user_id_to = ?");
         $stmt->execute([$userId]);
-        $balance += (int) $stmt->fetchColumn();
+        $received = (float) $stmt->fetchColumn();
+        $balance += $received; 
 
-        // 4. J'ai envoyé un remboursement (Dette -)
+        // Retrait des remboursements donnés (-)
         $stmt = $db->prepare("SELECT SUM(amount) FROM reimbursement WHERE user_id_from = ?");
         $stmt->execute([$userId]);
-        $balance -= (int) $stmt->fetchColumn();
+        $sent = (float) $stmt->fetchColumn();
+        $balance -= $sent;
 
         return $balance;
     }
